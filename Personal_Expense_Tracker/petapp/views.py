@@ -5,9 +5,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
-# Create your views here.
 
 
+# LOGIN
 def login_view(request):
     if request.method == "POST":
         username = request.POST['username']
@@ -20,6 +20,7 @@ def login_view(request):
             
     return render(request,'login.html')
 
+# REGISTRATION
 def registration(request):
     if request.method == "POST":
         username = request.POST['username']
@@ -32,6 +33,7 @@ def registration(request):
         return redirect('login')
     return render(request,'reg.html')
 
+# HOME
 @login_required
 def home(request):
 
@@ -53,6 +55,7 @@ def home(request):
 
     return render(request, 'home.html', context)
 
+# ADD EXPENSE 
 @login_required
 def expense(request):
     if request.method == "POST":
@@ -67,6 +70,7 @@ def expense(request):
         return redirect('home')
     return render(request,'expense.html')
 
+# ADD INCOME
 @login_required
 def income(request):
     if request.method == "POST":
@@ -80,11 +84,13 @@ def income(request):
         return redirect('home')
     return render(request,'income.html')
 
+# DISPLAY EXPENSE
 @login_required
 def displayExpense(request):
     expense = Expense.objects.filter(user=request.user)
     return render(request, 'displayexpense.html', {'expense': expense})
 
+# DELETE EXPENSE
 @login_required
 def deleteExpense(request, id):
     expense = Expense.objects.get(pk=id, user=request.user)
@@ -92,9 +98,9 @@ def deleteExpense(request, id):
     expense.delete()
 
     return redirect('home')
-
+# LOGOUT
 def logout_view(request):
 
     logout(request)
-    
+
     return redirect('login')
