@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Income</title>
+</head>
+<body>
+    <h1> Add Income</h1>
+    <form action="" method="post">
+        {% csrf_token %}
+        <label for=""> Source </label>
+        <input type="text" name="source">
+        <label for=""> Amount </label>
+        <input type="number" name="amount">
+        <button type="submit"> Save Income </button>
+    </form>
+</body>
+</html>
