@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
-from .models import Expense, Income
 # Create your views here.
 
 
@@ -37,9 +36,22 @@ def registration(request):
 def home(request):
 
     expenses = Expense.objects.filter(user=request.user)
-    incomes = Income.objects.filter(user=request.user)
+    income = Income.objects.filter(user=request.user)
 
-    return render(request, 'home.html', {'expenses': expenses, 'incomes': incomes})
+    total_expense = expenses.aggregate(Sum('amount'))['amount__sum'] or 0 
+    total_income = income.aggregate(Sum('amount'))['amount__sum'] or 0
+
+    balance = total_income - total_expense
+
+    context={
+        'expenses': expenses,
+        'income': income,
+        'total_expense': total_expense,
+        'total_income': total_income,
+        'balance': balance
+    }
+
+    return render(request, 'home.html', context)
 
 @login_required
 def expense(request):
@@ -47,8 +59,9 @@ def expense(request):
         title = request.POST['title']
         amount = float(request.POST['amount'])
         category = request.POST['category']
-        
-        expense = Expense.objects.create(user=request.user, title=title, amount=amount, category=category)
+        date = request.POST['date']
+
+        expense = Expense(user=request.user, title=title, amount=amount, category=category, date=date)
         expense.save()
 
         return redirect('home')
@@ -59,16 +72,23 @@ def income(request):
     if request.method == "POST":
         source = request.POST['source']
         amount = request.POST['amount']
-        
-        income = Income(user=request.user, source=source, amount=amount)
+        date = request.POST['date']
+
+        income = Income(user=request.user, source=source, amount=amount, date=date)
         income.save()
 
         return redirect('home')
     return render(request,'income.html')
 
 @login_required
+def displayExpense(request):
+    expense = Expense.objects.filter(user=request.user)
+    return render(request, 'displayexpense.html', {'expense': expense})
+
+@login_required
 def deleteExpense(request, id):
     expense = Expense.objects.get(pk=id, user=request.user)
+
     expense.delete()
 
     return redirect('home')
