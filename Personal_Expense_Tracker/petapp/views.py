@@ -5,10 +5,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
-from .models import Expense, Income
-# Create your views here.
 
 
+# LOGIN
 def login_view(request):
     if request.method == "POST":
         username = request.POST['username']
@@ -21,6 +20,7 @@ def login_view(request):
             
     return render(request,'login.html')
 
+# REGISTRATION
 def registration(request):
     if request.method == "POST":
         username = request.POST['username']
@@ -33,48 +33,74 @@ def registration(request):
         return redirect('login')
     return render(request,'reg.html')
 
+# HOME
 @login_required
 def home(request):
 
     expenses = Expense.objects.filter(user=request.user)
-    incomes = Income.objects.filter(user=request.user)
+    income = Income.objects.filter(user=request.user)
 
-    return render(request, 'home.html', {'expenses': expenses, 'incomes': incomes})
+    total_expense = expenses.aggregate(Sum('amount'))['amount__sum'] or 0 
+    total_income = income.aggregate(Sum('amount'))['amount__sum'] or 0
 
+    balance = total_income - total_expense
+
+    context={
+        'expenses': expenses,
+        'income': income,
+        'total_expense': total_expense,
+        'total_income': total_income,
+        'balance': balance
+    }
+
+    return render(request, 'home.html', context)
+
+# ADD EXPENSE 
 @login_required
 def expense(request):
     if request.method == "POST":
         title = request.POST['title']
         amount = float(request.POST['amount'])
         category = request.POST['category']
-        
-        expense = Expense.objects.create(user=request.user, title=title, amount=amount, category=category)
+        date = request.POST['date']
+
+        expense = Expense(user=request.user, title=title, amount=amount, category=category, date=date)
         expense.save()
 
         return redirect('home')
     return render(request,'expense.html')
 
+# ADD INCOME
 @login_required
 def income(request):
     if request.method == "POST":
         source = request.POST['source']
         amount = request.POST['amount']
-        
-        income = Income(user=request.user, source=source, amount=amount)
+        date = request.POST['date']
+
+        income = Income(user=request.user, source=source, amount=amount, date=date)
         income.save()
 
         return redirect('home')
     return render(request,'income.html')
 
+# DISPLAY EXPENSE
+@login_required
+def displayExpense(request):
+    expense = Expense.objects.filter(user=request.user)
+    return render(request, 'displayexpense.html', {'expense': expense})
+
+# DELETE EXPENSE
 @login_required
 def deleteExpense(request, id):
     expense = Expense.objects.get(pk=id, user=request.user)
+
     expense.delete()
 
     return redirect('home')
-
+# LOGOUT
 def logout_view(request):
 
     logout(request)
-    
+
     return redirect('login')
