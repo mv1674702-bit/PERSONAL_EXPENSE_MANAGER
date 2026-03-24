@@ -1,29 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker</title>
+    <title>Home</title>
 </head>
+
 <body>
-    <h1> Welcome To The Expense Tracker</h1>
-    <form action="" method="post">
-        {% csrf_token %}
-        <label> Title </label>
-        <input type="text" name="title">
-        <label> Amount </label>
-        <input type="number" name="amount">
-        <label> Category </label>
-        <input type="text" name="category">
-        <button type="submit"> Add Expense </button>
-    </form>
-    <h2>Expense Tracker </h2>
-    <h3> Total Income :rs {{ income }} </h3>
-    <h4> Total Expense :rs {{ expense }} </h4>
-    <h5> Total Saving :rs {{ saving }} </h5>
-    <br>
-    <a href="{% url "income" %}"> View All Income </a>
-    <br><br>
-    <a href="{% url "expense" %}"> View All Expenses </a>
+
+<h1>Welcome to Expense Tracker</h1>
+
+<a href="{% url "expense" %}">Add Expense</a> |
+<a href="{% url "income" %}">Add Income</a> |
+<a href="{% url "logout" %}">Logout</a>
+
+<hr>
+
+<h3>Total Income : {{total_income}}</h3>
+<h3>Total Expense : {{total_expense}}</h3>
+<h3>Balance : {{balance}}</h3>
+
+<hr>
+
+<h2>Expense List</h2>
+
+<table border="1">
+
+<tr>
+<th>Title</th>
+<th>Amount</th>
+<th>Category</th>
+<th>Date</th>
+<th>Delete</th>
+</tr>
+
+{% for expense in expenses %}
+
+<tr>
+
+<td>{{expense.title}}</td>
+<td>{{expense.amount}}</td>
+<td>{{expense.category}}</td>
+<td>{{expense.date}}</td>
+
+<td>
+<a href="{% url "deleteExpense" expense.id %}">Delete</a>
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
 </body>
 </html>
